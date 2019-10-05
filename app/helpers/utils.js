@@ -7,4 +7,8 @@ module.exports = {
     }
     return result;
   },
+  ERROR_MESSAGE : {
+    'token_not_found' : 'Authorization token is required',
+    'thermostat_not_found' : 'Thermostat not found'
+  }
 };
