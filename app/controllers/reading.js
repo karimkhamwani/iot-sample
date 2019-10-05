@@ -12,6 +12,7 @@ const Boom = require("boom");
 const ReadingModel = require("../models/reading");
 const _ = require("lodash");
 var EventEmitter = require("events");
+const readingSchema = require('../schema/readingSchema');
 
 const eventHandler = new EventEmitter();
 
@@ -27,11 +28,7 @@ router.post(
   "/thermostat/reading",
   authMiddleware,
   celebrate({
-    body: {
-      temperature: Joi.number().required(),
-      humidity: Joi.number().required(),
-      battery_charge: Joi.number().required()
-    }
+    body: readingSchema
   }),
   async (req, res) => {
     const {
