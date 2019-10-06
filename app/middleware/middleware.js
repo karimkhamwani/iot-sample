@@ -9,10 +9,10 @@ const { ERROR_MESSAGE, response } = require("../helpers/utils");
  * @return {json}}} return error in json or pass requet to next middleware
  */
 const authenticationMiddleware = async (req, res, next) => {
-  const { token } = req.headers;
-  if (!token) return response(res, 401, ERROR_MESSAGE.token_not_found);
+  const { authorization } = req.headers;
+  if (!authorization) return response(res, 401, ERROR_MESSAGE.token_not_found);
 
-  const thermostat = await Thermostat.findOne({ household_token: token });
+  const thermostat = await Thermostat.findOne({ household_token: authorization });
   if (!thermostat)
     return response(res, 404, ERROR_MESSAGE.thermostat_not_found);
 
