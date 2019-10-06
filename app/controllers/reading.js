@@ -12,7 +12,7 @@ const Boom = require("boom");
 const ReadingModel = require("../models/reading");
 const _ = require("lodash");
 var EventEmitter = require("events");
-const readingSchema = require('../schema/readingSchema');
+const readingSchema = require("../schema/readingSchema");
 
 const eventHandler = new EventEmitter();
 
@@ -46,7 +46,7 @@ router.post(
       tracking_number: trackingNumber
     });
 
-    res.send({ success: true, status : 200 });
+    res.send({ success: true, status: 200 });
   }
 );
 
@@ -78,44 +78,58 @@ router.get("/thermostat/stats", authMiddleware, async (req, res, next) => {
   const {
     thermostat: { _id }
   } = req;
+
+  let tempAvg = 0,
+    humidityAvg = 0,
+    batteryAvg = 0;
+
+  let tempMax = 0,
+    humidityMax = 0,
+    batteryMax = 0;
+
+  let tempMin = Infinity,
+    humidityMin = Infinity,
+    batteryMin = Infinity;
+
   const records = await ReadingModel.find({
     thermostat_id: _id
   });
+  const totalRecords = records.length;
 
   if (!records) return next(Boom.notFound("Readings not found"));
 
-  const tempAvg = _.meanBy(records, "temperature");
-  const humidityAvg = _.meanBy(records, "humidity");
-  const batteryAvg = _.meanBy(records, "battery_charge");
+  records.forEach(r => {
+    const { temperature: temp, humidity: hum, battery_charge: charge } = r;
+    tempAvg = tempAvg + temp;
+    (humidityAvg = humidityAvg + hum), (batteryAvg = batteryAvg + charge);
 
-  const tempMax = _.maxBy(records, "temperature").temperature;
-  const humidityMax = _.maxBy(records, "humidity").humidity;
-  const batteryMax = _.maxBy(records, "battery_charge").battery_charge;
+    tempMax = tempMax < temp ? temp : tempMax;
+    humidityMax = humidityMax < hum ? hum : humidityMax;
+    batteryMax = batteryMax < charge ? charge : batteryMax;
 
-  const tempMin = _.minBy(records, "temperature").temperature;
-  const humidityMin = _.minBy(records, "humidity").humidity;
-  const batteryMin = _.minBy(records, "battery_charge").battery_charge;
-
-  console.log(batteryAvg);
+    tempMin = tempMin > temp ? temp : tempMin;
+    humidityMin = humidityMin > hum ? hum : humidityMin;
+    batteryMin = batteryMax > charge ? charge : batteryMin;
+  });
 
   const response = {
     temperature: {
-      average: tempAvg,
+      average: tempAvg / totalRecords,
       max: tempMax,
       min: tempMin
     },
     humidity: {
-      average: humidityAvg,
+      average: humidityAvg / totalRecords,
       max: humidityMax,
       min: humidityMin
     },
     battery: {
-      average: batteryAvg,
+      average: batteryAvg / totalRecords,
       max: batteryMax,
       min: batteryMin
     }
   };
-  res.send({ ...response });
+  res.send({ response });
 });
 
 router.use(errors());
