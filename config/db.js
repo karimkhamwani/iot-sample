@@ -1,5 +1,4 @@
 const Mongoose = require('mongoose');
-const debug = require('debug')('myapp:db');
 const config = require('./config');
 
 // Use native ES6 promises

@@ -12,7 +12,7 @@ module.exports = {
     token_not_found: "Authorization token is required",
     thermostat_not_found: "Thermostat not found"
   },
-  response(res, status, message) {
-    return res.status(status).send({ message, status });
+  response(res, status, message , data) {
+    return res.status(status).send({ message, status, data });
   }
 };

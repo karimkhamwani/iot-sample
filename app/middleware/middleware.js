@@ -10,7 +10,7 @@ const { ERROR_MESSAGE, response } = require("../helpers/utils");
  */
 const authenticationMiddleware = async (req, res, next) => {
   const { token } = req.headers;
-  if (!token) return response(res, 400, ERROR_MESSAGE.token_not_found);
+  if (!token) return response(res, 401, ERROR_MESSAGE.token_not_found);
 
   const thermostat = await Thermostat.findOne({ household_token: token });
   if (!thermostat)

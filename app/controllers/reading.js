@@ -13,6 +13,7 @@ const ReadingModel = require("../models/reading");
 const _ = require("lodash");
 var EventEmitter = require("events");
 const readingSchema = require("../schema/readingSchema");
+const { response } = require("../helpers/utils");
 
 const eventHandler = new EventEmitter();
 
@@ -46,7 +47,7 @@ router.post(
       tracking_number: trackingNumber
     });
 
-    res.send({ success: true, status: 200 });
+    return response(res, 200, true , null);
   }
 );
 
@@ -55,22 +56,22 @@ router.get(
   authMiddleware,
   celebrate({
     query: {
-      trackingNumber: Joi.number().required()
+      number: Joi.number().required()
     }
   }),
   async (req, res, next) => {
     const {
       thermostat: { _id }
     } = req;
-    const { trackingNumber } = req.query;
+    const { number } = req.query;
     const readingRecord = await ReadingModel.findOne({
       thermostat_id: _id,
-      tracking_number: trackingNumber
+      tracking_number: number
     });
 
-    if (!readingRecord) return next(Boom.notFound("Reading not found"));
+    if (!readingRecord) return response(res , 404 , 'Reading not found' , null)
 
-    res.send(readingRecord);
+    return response(res , 200 , null , readingRecord)
   }
 );
 
@@ -96,7 +97,7 @@ router.get("/thermostat/stats", authMiddleware, async (req, res, next) => {
   });
   const totalRecords = records.length;
 
-  if (!records) return next(Boom.notFound("Readings not found"));
+  if (!records) return response(res , 404 , 'Readings not found' , null)
 
   records.forEach(r => {
     const { temperature: temp, humidity: hum, battery_charge: charge } = r;
@@ -112,7 +113,7 @@ router.get("/thermostat/stats", authMiddleware, async (req, res, next) => {
     batteryMin = batteryMax > charge ? charge : batteryMin;
   });
 
-  const response = {
+  const data = {
     temperature: {
       average: tempAvg / totalRecords,
       max: tempMax,
@@ -129,7 +130,7 @@ router.get("/thermostat/stats", authMiddleware, async (req, res, next) => {
       min: batteryMin
     }
   };
-  res.send({ response });
+  return response(res , 200 , null , data)  
 });
 
 router.use(errors());
