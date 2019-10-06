@@ -9,17 +9,17 @@ Mongoose.connect(config.database.url, { useMongoClient: true });
 const db = Mongoose.connection;
 
 db.on('error', () => {
-  debug(`MongoDB connection error ${config.database.url} \nPlease make sure MongoDB is running.`);
+  console.log(`MongoDB connection error ${config.database.url} \nPlease make sure MongoDB is running.`);
   process.exit();
 });
 
 db.once('open', () => {
-  debug('MongoDB connection with database succeeded.');
+  console.log('MongoDB connection with database succeeded.');
 });
 
 process.on('SIGINT', () => {
   db.close(() => {
-    debug('MongoDB connection disconnected through app termination.');
+    console.log('MongoDB connection disconnected through app termination.');
     process.exit();
   });
 });

@@ -1,6 +1,5 @@
-const Boom = require("Boom");
 const Thermostat = require("../models/thermostat");
-const { ERROR_MESSAGE } = require("../helpers/utils");
+const { ERROR_MESSAGE, response } = require("../helpers/utils");
 /**
  * Check if token provided to route and is valid token
  * pass then call next middleware otherwise throw error
@@ -11,14 +10,12 @@ const { ERROR_MESSAGE } = require("../helpers/utils");
  */
 const authenticationMiddleware = async (req, res, next) => {
   const { token } = req.headers;
-  if (!token) return next(Boom.badRequest(ERROR_MESSAGE.token_not_found));
+  if (!token) return response(res, 400, ERROR_MESSAGE.token_not_found);
 
   const thermostat = await Thermostat.findOne({ household_token: token });
   if (!thermostat)
-    return res
-      .status(404)
-      .send({ message: ERROR_MESSAGE.thermostat_not_found, status: 404 });
-      
+    return response(res, 404, ERROR_MESSAGE.thermostat_not_found);
+
   req.thermostat = thermostat;
   next();
 };
